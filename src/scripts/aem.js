@@ -11,45 +11,73 @@
  */
 
 /* eslint-env browser */
+
+import { SECTION_STYLES } from './constants.js';
+
 function sampleRUM(checkpoint, data) {
   // eslint-disable-next-line max-len
-  const timeShift = () => (window.performance ? window.performance.now() : Date.now() - window.hlx.rum.firstReadTime);
+  const timeShift = () => (window.performance
+    ? window.performance.now()
+    : Date.now() - window.hlx.rum.firstReadTime);
   try {
     window.hlx = window.hlx || {};
-    sampleRUM.enhance = () => {};
+    sampleRUM.enhance = () => { };
     if (!window.hlx.rum) {
-      const weight = new URLSearchParams(window.location.search).get('rum') === 'on' ? 1 : 100;
+      const param = new URLSearchParams(window.location.search).get('rum');
+      const weight = (window.SAMPLE_PAGEVIEWS_AT_RATE === 'high' && 10)
+        || (window.SAMPLE_PAGEVIEWS_AT_RATE === 'low' && 1000)
+        || (param === 'on' && 1)
+        || 100;
       const id = Math.random().toString(36).slice(-4);
-      const isSelected = Math.random() * weight < 1;
+      const isSelected = param !== 'off' && Math.random() * weight < 1;
       // eslint-disable-next-line object-curly-newline, max-len
       window.hlx.rum = {
         weight,
         id,
         isSelected,
-        firstReadTime: window.performance ? window.performance.timeOrigin : Date.now(),
+        firstReadTime: window.performance
+          ? window.performance.timeOrigin
+          : Date.now(),
         sampleRUM,
         queue: [],
         collector: (...args) => window.hlx.rum.queue.push(args),
       };
       if (isSelected) {
-        ['error', 'unhandledrejection'].forEach((event) => {
-          window.addEventListener(event, ({ reason, error }) => {
-            const errData = { source: 'undefined error' };
-            try {
-              errData.target = (reason || error).toString();
-              errData.source = (reason || error).stack
-                .split('\n')
-                .filter((line) => line.match(/https?:\/\//))
-                .shift()
-                .replace(/at ([^ ]+) \((.+)\)/, '$1@$2')
-                .trim();
-            } catch (err) {
-              /* error structure was not as expected */
-            }
-            sampleRUM('error', errData);
-          });
+        const dataFromErrorObj = (error) => {
+          const errData = { source: 'undefined error' };
+          try {
+            errData.target = error.toString();
+            errData.source = error.stack
+              .split('\n')
+              .filter((line) => line.match(/https?:\/\//))
+              .shift()
+              .replace(/at ([^ ]+) \((.+)\)/, '$1@$2')
+              .replace(/ at /, '@')
+              .trim();
+          } catch (err) {
+            /* error structure was not as expected */
+          }
+          return errData;
+        };
+
+        window.addEventListener('error', ({ error }) => {
+          const errData = dataFromErrorObj(error);
+          sampleRUM('error', errData);
         });
-        sampleRUM.baseURL = sampleRUM.baseURL || new URL(window.RUM_BASE || '/', new URL('https://rum.hlx.page'));
+
+        window.addEventListener('unhandledrejection', ({ reason }) => {
+          let errData = {
+            source: 'Unhandled Rejection',
+            target: reason || 'Unknown',
+          };
+          if (reason instanceof Error) {
+            errData = dataFromErrorObj(reason);
+          }
+          sampleRUM('error', errData);
+        });
+
+        sampleRUM.baseURL = sampleRUM.baseURL
+          || new URL(window.RUM_BASE || '/', new URL('https://rum.hlx.page'));
         sampleRUM.collectBaseURL = sampleRUM.collectBaseURL || sampleRUM.baseURL;
         sampleRUM.sendPing = (ck, time, pingData = {}) => {
           // eslint-disable-next-line max-len, object-curly-newline
@@ -61,7 +89,13 @@ function sampleRUM(checkpoint, data) {
             t: time,
             ...pingData,
           });
-          const { href: url, origin } = new URL(`.rum/${weight}`, sampleRUM.collectBaseURL);
+          const urlParams = window.RUM_PARAMS
+            ? `?${new URLSearchParams(window.RUM_PARAMS).toString()}`
+            : '';
+          const { href: url, origin } = new URL(
+            `.rum/${weight}${urlParams}`,
+            sampleRUM.collectBaseURL,
+          );
           const body = origin === window.location.origin
             ? new Blob([rumData], { type: 'application/json' })
             : rumData;
@@ -72,9 +106,17 @@ function sampleRUM(checkpoint, data) {
         sampleRUM.sendPing('top', timeShift());
 
         sampleRUM.enhance = () => {
+          // only enhance once
+          if (document.querySelector('script[src*="rum-enhancer"]')) return;
+          const { enhancerVersion, enhancerHash } = sampleRUM.enhancerContext || {};
           const script = document.createElement('script');
+          if (enhancerHash) {
+            script.integrity = enhancerHash;
+            script.setAttribute('crossorigin', 'anonymous');
+          }
           script.src = new URL(
-            '.rum/@adobe/helix-rum-enhancer@^2/src/index.js',
+            `.rum/@adobe/helix-rum-enhancer@${enhancerVersion || '^2'
+            }/src/index.js`,
             sampleRUM.baseURL,
           ).href;
           document.head.appendChild(script);
@@ -87,9 +129,11 @@ function sampleRUM(checkpoint, data) {
     if (window.hlx.rum && window.hlx.rum.isSelected && checkpoint) {
       window.hlx.rum.collector(checkpoint, data, timeShift());
     }
-    document.dispatchEvent(new CustomEvent('rum', { detail: { checkpoint, data } }));
+    document.dispatchEvent(
+      new CustomEvent('rum', { detail: { checkpoint, data } }),
+    );
   } catch (error) {
-    // something went wrong
+    // something went awry
   }
 }
 
@@ -103,10 +147,20 @@ function setup() {
   window.hlx.codeBasePath = '';
   window.hlx.lighthouse = new URLSearchParams(window.location.search).get('lighthouse') === 'on';
 
-  const scriptEl = document.querySelector('script[src$="/scripts/scripts.js"]');
+  const mainScriptDestination = '/dist/main/main.js';
+  const scriptEl = document.querySelector(
+    `script[src$="${mainScriptDestination}"]`,
+  );
   if (scriptEl) {
     try {
-      [window.hlx.codeBasePath] = new URL(scriptEl.src).pathname.split('/scripts/scripts.js');
+      const scriptURL = new URL(scriptEl.src, window.location);
+      if (scriptURL.host === window.location.host) {
+        [window.hlx.codeBasePath] = scriptURL.pathname.split(
+          mainScriptDestination,
+        );
+      } else {
+        [window.hlx.codeBasePath] = scriptURL.href.split(mainScriptDestination);
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -119,6 +173,11 @@ function setup() {
  */
 
 function init() {
+  // skip if in vite's test mode
+  if (typeof process !== 'undefined' && process?.env?.VITEST) {
+    return;
+  }
+
   setup();
   sampleRUM();
 }
@@ -133,7 +192,7 @@ function toClassName(name) {
     ? name
       .toLowerCase()
       .replace(/[^0-9a-z]/gi, '-')
-      .replace(/-+/g, '-')
+      .replace(/--+/g, '--')
       .replace(/^-|-$/g, '')
     : '';
 }
@@ -261,19 +320,25 @@ function createOptimizedPicture(
   src,
   alt = '',
   eager = false,
-  breakpoints = [{ media: '(min-width: 600px)', width: '2000' }, { width: '750' }],
+  breakpoints = [
+    { media: '(min-width: 600px)', width: '2000' },
+    { width: '750' },
+  ],
 ) {
-  const url = !src.startsWith('http') ? new URL(src, window.location.href) : new URL(src);
+  const url = new URL(src, window.location.href);
   const picture = document.createElement('picture');
-  const { origin, pathname } = url;
-  const ext = pathname.split('.').pop();
+  const { pathname } = url;
+  const ext = pathname.substring(pathname.lastIndexOf('.') + 1);
 
   // webp
   breakpoints.forEach((br) => {
     const source = document.createElement('source');
     if (br.media) source.setAttribute('media', br.media);
     source.setAttribute('type', 'image/webp');
-    source.setAttribute('srcset', `${origin}${pathname}?width=${br.width}&format=webply&optimize=medium`);
+    source.setAttribute(
+      'srcset',
+      `${pathname}?width=${br.width}&format=webply&optimize=medium`,
+    );
     picture.appendChild(source);
   });
 
@@ -282,14 +347,20 @@ function createOptimizedPicture(
     if (i < breakpoints.length - 1) {
       const source = document.createElement('source');
       if (br.media) source.setAttribute('media', br.media);
-      source.setAttribute('srcset', `${origin}${pathname}?width=${br.width}&format=${ext}&optimize=medium`);
+      source.setAttribute(
+        'srcset',
+        `${pathname}?width=${br.width}&format=${ext}&optimize=medium`,
+      );
       picture.appendChild(source);
     } else {
       const img = document.createElement('img');
       img.setAttribute('loading', eager ? 'eager' : 'lazy');
       img.setAttribute('alt', alt);
       picture.appendChild(img);
-      img.setAttribute('src', `${origin}${pathname}?width=${br.width}&format=${ext}&optimize=medium`);
+      img.setAttribute(
+        'src',
+        `${pathname}?width=${br.width}&format=${ext}&optimize=medium`,
+      );
     }
   });
 
@@ -307,7 +378,12 @@ function decorateTemplateAndTheme() {
   };
   const template = getMetadata('template');
   if (template) addClasses(document.body, template);
-  const theme = getMetadata('theme');
+
+  let theme = getMetadata('theme');
+  if (theme && !theme.startsWith('theme-')) {
+    theme = `theme-${theme}`;
+  }
+
   if (theme) addClasses(document.body, theme);
 }
 
@@ -334,13 +410,27 @@ function wrapTextNodes(block) {
   const wrap = (el) => {
     const wrapper = document.createElement('p');
     wrapper.append(...el.childNodes);
+    [...el.attributes]
+      // move the instrumentation from the cell to the new paragraph, also keep the class
+      // in case the content is a buttton and the cell the button-container
+      .filter(
+        ({ nodeName }) => nodeName === 'class'
+          || nodeName.startsWith('data-aue')
+          || nodeName.startsWith('data-richtext'),
+      )
+      .forEach(({ nodeName, nodeValue }) => {
+        wrapper.setAttribute(nodeName, nodeValue);
+        el.removeAttribute(nodeName);
+      });
     el.append(wrapper);
   };
 
   block.querySelectorAll(':scope > div > div').forEach((blockColumn) => {
     if (blockColumn.hasChildNodes()) {
       const hasWrapper = !!blockColumn.firstElementChild
-        && validWrappers.some((tagName) => blockColumn.firstElementChild.tagName === tagName);
+        && validWrappers.some(
+          (tagName) => blockColumn.firstElementChild.tagName === tagName,
+        );
       if (!hasWrapper) {
         wrap(blockColumn);
       } else if (
@@ -364,7 +454,10 @@ function decorateButtons(element) {
       const up = a.parentElement;
       const twoup = a.parentElement.parentElement;
       if (!a.querySelector('img')) {
-        if (up.childNodes.length === 1 && (up.tagName === 'P' || up.tagName === 'DIV')) {
+        if (
+          up.childNodes.length === 1
+          && (up.tagName === 'P' || up.tagName === 'DIV')
+        ) {
           a.className = 'button'; // default
           up.classList.add('button-container');
         }
@@ -392,32 +485,74 @@ function decorateButtons(element) {
 }
 
 /**
- * Add <img> for icon, prefixed with codeBasePath and optional prefix.
- * @param {Element} [span] span element with icon classes
- * @param {string} [prefix] prefix to be added to icon src
- * @param {string} [alt] alt text to be added to icon
+ * Add material icon or SVG icon to a span element
+ * @param {Element} span - The span element to decorate
+ * @param {Array} iconsList - List of available SVG icons
+ * @param {string} prefix - Optional prefix for icon path
  */
-function decorateIcon(span, prefix = '', alt = '') {
+async function decorateIcon(span, iconsList, prefix = '') {
+  // Extract icon name from the class (icon-name → name)
   const iconName = Array.from(span.classList)
     .find((c) => c.startsWith('icon-'))
-    .substring(5);
-  const img = document.createElement('img');
-  img.dataset.iconName = iconName;
-  img.src = `${window.hlx.codeBasePath}${prefix}/icons/${iconName}.svg`;
-  img.alt = alt;
-  img.loading = 'lazy';
-  span.append(img);
+    ?.substring(5);
+
+  if (!iconName) return;
+
+  // For SVG icons in the iconsList
+  if (iconsList.includes(iconName)) {
+    try {
+      const imagePath = `${window.hlx.codeBasePath}${prefix}/icons/${iconName}.svg`;
+      const response = await fetch(imagePath);
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      const svgText = await response.text();
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(
+        svgText,
+        'image/svg+xml',
+      ).documentElement;
+      span.innerHTML = svgDoc.outerHTML;
+    } catch (error) {
+      console.error(`Failed to load SVG icon: ${iconName}`, error);
+    }
+  } else {
+    // Store icon name in data attribute instead of text content
+    span.setAttribute('data-icon', iconName);
+
+    // Clear any existing text to avoid duplication
+    span.textContent = '';
+
+    // There is a bug in universal editor where if the span has no content,
+    // it will be removed from the DOM.
+    // This is a workaround to ensure the icon is always visible.
+    if (document.querySelector('[data-aue-resource]')) {
+      const img = document.createElement('img');
+      img.dataset.iconName = iconName;
+      img.classList.add('display-none');
+      // Use a 1x1 transparent pixel data URI instead of loading an external SVG
+      img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+      img.width = 1;
+      img.height = 1;
+      img.alt = '';
+      span.append(img);
+    }
+  }
 }
 
 /**
- * Add <img> for icons, prefixed with codeBasePath and optional prefix.
- * @param {Element} [element] Element containing icons
- * @param {string} [prefix] prefix to be added to icon the src
+ * Decorate all icon spans in an element
+ * @param {Element} element - Element containing icons
+ * @param {string} prefix - Optional prefix for icon path
  */
 function decorateIcons(element, prefix = '') {
+  // List of available SVG icons
+  const iconsList = ['twitter', 'linkedin', 'facebook'];
+
+  // Find all spans with the icon class
   const icons = [...element.querySelectorAll('span.icon')];
+
+  // Process each icon
   icons.forEach((span) => {
-    decorateIcon(span, prefix);
+    decorateIcon(span, iconsList, prefix);
   });
 }
 
@@ -426,41 +561,50 @@ function decorateIcons(element, prefix = '') {
  * @param {Element} main The container element
  */
 function decorateSections(main) {
-  main.querySelectorAll(':scope > div').forEach((section) => {
-    const wrappers = [];
-    let defaultContent = false;
-    [...section.children].forEach((e) => {
-      if (e.tagName === 'DIV' || !defaultContent) {
-        const wrapper = document.createElement('div');
-        wrappers.push(wrapper);
-        defaultContent = e.tagName !== 'DIV';
-        if (defaultContent) wrapper.classList.add('default-content-wrapper');
-      }
-      wrappers[wrappers.length - 1].append(e);
-    });
-    wrappers.forEach((wrapper) => section.append(wrapper));
-    section.classList.add('section');
-    section.dataset.sectionStatus = 'initialized';
-    section.style.display = 'none';
-
-    // Process section metadata
-    const sectionMeta = section.querySelector('div.section-metadata');
-    if (sectionMeta) {
-      const meta = readBlockConfig(sectionMeta);
-      Object.keys(meta).forEach((key) => {
-        if (key === 'style') {
-          const styles = meta.style
-            .split(',')
-            .filter((style) => style)
-            .map((style) => toClassName(style.trim()));
-          styles.forEach((style) => section.classList.add(style));
-        } else {
-          section.dataset[toCamelCase(key)] = meta[key];
+  main
+    .querySelectorAll(':scope > div:not([data-section-status])')
+    .forEach((section) => {
+      const wrappers = [];
+      let defaultContent = false;
+      [...section.children].forEach((e) => {
+        if ((e.tagName === 'DIV' && e.className) || !defaultContent) {
+          const wrapper = document.createElement('div');
+          wrappers.push(wrapper);
+          defaultContent = e.tagName !== 'DIV' || !e.className;
+          if (defaultContent) wrapper.classList.add('default-content-wrapper');
         }
+        wrappers[wrappers.length - 1].append(e);
       });
-      sectionMeta.parentNode.remove();
-    }
-  });
+      wrappers.forEach((wrapper) => section.append(wrapper));
+      section.classList.add('section', 'nsw-section');
+
+      section.dataset.sectionStatus = 'initialized';
+      section.style.display = 'none';
+
+      // Process section metadata
+      const sectionMeta = section.querySelector('div.section-metadata');
+      if (sectionMeta) {
+        const meta = readBlockConfig(sectionMeta);
+        Object.keys(meta).forEach((key) => {
+          const lowerCaseKey = key.toLowerCase();
+          const styles = SECTION_STYLES[lowerCaseKey];
+          const style = styles?.find((s) => s.name.toLowerCase() === meta[key].toLowerCase());
+
+          if (style) {
+            section.classList.add(style.value);
+          } else {
+            // add the key to the section as a data attribute for easier debugging
+            section.dataset[toCamelCase(key)] = meta[key];
+          }
+        });
+
+        if (section.classList.contains('nsw-section--brand-dark') || section.classList.contains('nsw-section--brand-supplementary')) {
+          section.classList.add('nsw-section--invert');
+        }
+
+        sectionMeta.parentNode.remove();
+      }
+    });
 }
 
 /**
@@ -471,33 +615,112 @@ function decorateSections(main) {
 // eslint-disable-next-line import/prefer-default-export
 async function fetchPlaceholders(prefix = 'default') {
   window.placeholders = window.placeholders || {};
+
   if (!window.placeholders[prefix]) {
     window.placeholders[prefix] = new Promise((resolve) => {
-      fetch(`${prefix === 'default' ? '' : prefix}/placeholders.json`)
-        .then((resp) => {
-          if (resp.ok) {
-            return resp.json();
-          }
-          return {};
+      fetch(`${prefix === 'default' ? '' : prefix}/.nsw/config.json`)
+        .then((resp) => (resp.ok ? resp.json() : { path: '' }))
+        .then((pathData) => {
+          const globalPlaceholderPath = pathData.data.find((item) => item.Key === 'global-placeholders')?.Text || '';
+          return Promise.all([
+            // Fetch local placeholders
+            fetch(`${prefix === 'default' ? '' : prefix}/placeholders.json`)
+              .then((resp) => (resp.ok ? resp.json() : { data: [] }))
+              .catch(() => ({ data: [] })),
+            // Fetch global placeholders using the path received
+            fetch(globalPlaceholderPath)
+              .then((resp) => (resp.ok ? resp.json() : { data: [] }))
+              .catch(() => ({ data: [] })),
+          ]);
         })
-        .then((json) => {
+        .then(([localData, globalData]) => {
           const placeholders = {};
-          json.data
-            .filter((placeholder) => placeholder.Key)
-            .forEach((placeholder) => {
-              placeholders[toCamelCase(placeholder.Key)] = placeholder.Text;
+
+          // Process global placeholders first
+          globalData.data
+            .filter((item) => item.Key)
+            .forEach((item) => {
+              placeholders[toCamelCase(item.Key)] = item.Text;
             });
+
+          // Override with local placeholders if any
+          localData.data
+            .filter((item) => item.Key)
+            .forEach((item) => {
+              placeholders[toCamelCase(item.Key)] = item.Text;
+            });
+
           window.placeholders[prefix] = placeholders;
           resolve(window.placeholders[prefix]);
         })
         .catch(() => {
-          // error loading placeholders
+          // In case of an error, fallback to empty object
           window.placeholders[prefix] = {};
           resolve(window.placeholders[prefix]);
         });
     });
   }
-  return window.placeholders[`${prefix}`];
+
+  return window.placeholders[prefix];
+}
+
+/**
+ * Gets config object.
+ * @param {string} [prefix] Location of config
+ * @returns {object} Window config object
+ */
+// eslint-disable-next-line import/prefer-default-export
+async function fetchConfig(prefix = 'default') {
+  window.nswConfig = window.nswConfig || {};
+
+  if (!window.nswConfig[prefix]) {
+    window.nswConfig[prefix] = new Promise((resolve) => {
+      // Fetch the path of the global config file
+      fetch(`${prefix === 'default' ? '' : prefix}/.nsw/config.json`)
+        .then((resp) => (resp.ok ? resp.json() : { path: '' }))
+        .then((pathData) => {
+          const globalConfigPath = pathData.data.find((item) => item.Key === 'global-config')?.Text || '';
+
+          return Promise.all([
+            // Fetch local config
+            fetch(`${prefix === 'default' ? '' : prefix}/config.json`)
+              .then((resp) => (resp.ok ? resp.json() : { data: [] }))
+              .catch(() => ({ data: [] })),
+            // Fetch global config using the path received
+            fetch(globalConfigPath)
+              .then((resp) => (resp.ok ? resp.json() : { data: [] }))
+              .catch(() => ({ data: [] })),
+          ]);
+        })
+        .then(([localData, globalData]) => {
+          const config = {};
+
+          // Process global config first
+          globalData.data
+            .filter((item) => item.Key)
+            .forEach((item) => {
+              config[toCamelCase(item.Key)] = item.Text;
+            });
+
+          // Override with local config if any
+          localData.data
+            .filter((item) => item.Key)
+            .forEach((item) => {
+              config[toCamelCase(item.Key)] = item.Text;
+            });
+
+          window.nswConfig[prefix] = config;
+          resolve(window.nswConfig[prefix]);
+        })
+        .catch(() => {
+          // In case of an error, fallback to empty object
+          window.nswConfig[prefix] = {};
+          resolve(window.nswConfig[prefix]);
+        });
+    });
+  }
+
+  return window.nswConfig[prefix];
 }
 
 /**
@@ -541,13 +764,10 @@ async function loadBlock(block) {
     block.dataset.blockStatus = 'loading';
     const { blockName } = block.dataset;
     try {
-      const cssLoaded = loadCSS(`${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.css`);
       const decorationComplete = new Promise((resolve) => {
         (async () => {
           try {
-            const mod = await import(
-              `${window.hlx.codeBasePath}/blocks/${blockName}/${blockName}.js`
-            );
+            const mod = await import(`Blocks/${blockName}/${blockName}.js`);
             if (mod.default) {
               await mod.default(block);
             }
@@ -558,7 +778,7 @@ async function loadBlock(block) {
           resolve();
         })();
       });
-      await Promise.all([cssLoaded, decorationComplete]);
+      await Promise.all([decorationComplete]);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(`failed to load block ${blockName}`, error);
@@ -574,7 +794,7 @@ async function loadBlock(block) {
  */
 function decorateBlock(block) {
   const shortBlockName = block.classList[0];
-  if (shortBlockName) {
+  if (shortBlockName && !block.dataset.blockStatus) {
     block.classList.add('block');
     block.dataset.blockName = shortBlockName;
     block.dataset.blockStatus = 'initialized';
@@ -583,6 +803,8 @@ function decorateBlock(block) {
     blockWrapper.classList.add(`${shortBlockName}-wrapper`);
     const section = block.closest('.section');
     if (section) section.classList.add(`${shortBlockName}-container`);
+    // eslint-disable-next-line no-use-before-define
+    decorateButtons(block);
   }
 }
 
@@ -665,6 +887,9 @@ async function loadSections(element) {
   for (let i = 0; i < sections.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
     await loadSection(sections[i]);
+    if (i === 0 && sampleRUM.enhance) {
+      sampleRUM.enhance();
+    }
   }
 }
 
@@ -680,6 +905,7 @@ export {
   decorateSections,
   decorateTemplateAndTheme,
   fetchPlaceholders,
+  fetchConfig,
   getMetadata,
   loadBlock,
   loadCSS,
