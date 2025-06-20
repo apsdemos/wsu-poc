@@ -1,0 +1,2 @@
+async function r(t){const[o,e]=[...t.children].map(a=>a.firstElementChild),n=document.createElement("blockquote");o.className="quote-quotation",n.append(o),e&&(e.className="quote-attribution",n.append(e),e.querySelectorAll("em").forEach(c=>{const i=document.createElement("cite");i.innerHTML=c.innerHTML,c.replaceWith(i)})),t.innerHTML="",t.append(n)}export{r as default};
+//# sourceMappingURL=quote.js.map

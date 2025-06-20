@@ -1,0 +1,2 @@
+import{h as r}from"../chunks/aem-CseYPO2m.js";import{loadFragment as i}from"../fragment/fragment.js";import"../chunks/delayed-CCr1TJIn.js";async function c(t){const e=r("footer"),n=e?new URL(e,window.location).pathname:"/footer",o=await i(n);t.textContent="";const a=document.createElement("div");for(;o.firstElementChild;)a.append(o.firstElementChild);t.append(a)}export{c as default};
+//# sourceMappingURL=footer.js.map
