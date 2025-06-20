@@ -27,8 +27,6 @@ export default function decorate(block) {
     const aHref = a ? a.href : '';
     const aText = a ? a.innerText : textCol.innerText.trim();
 
-    console.log(aHref, aText, imgSrc);
-
     cardDiv.innerHTML = `
       <div class="card">
           <a href="${aHref}" alt="${aText}">
