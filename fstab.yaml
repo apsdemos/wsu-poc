@@ -1,4 +1,5 @@
 mountpoints:
   /:
-    url: https://content.da.live/apsdemos/wsu-poc/
-    type: markup
+    url: "https://author-p106442-e1666219.adobeaemcloud.com/bin/franklin.delivery/monendra/eds-ue/main"
+    type: "markup"
+    suffix: ".html"

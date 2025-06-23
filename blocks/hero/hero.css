@@ -7,13 +7,18 @@
   position: relative;
   padding: 40px 24px;
   min-height: 300px;
+  margin-top: 0;
 }
 
 .hero h1 {
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-  color: var(--background-color);
+  max-width: 1124px;
+  height: 160px;
+  margin: 0 auto 32px;
+  color: #FFFFFF;
+  font-family: "Gotham Narrow A", "Gotham Narrow B", var(--heading-font-family);
+  font-size: 70px;
+  line-height: 1.2;
+  font-weight: 400;
 }
 
 .hero picture {
@@ -30,8 +35,22 @@
   height: 100%;
 }
 
+/* Make sure the hero is the first child in main to receive the margin-top */
+main > .hero-container:first-child {
+  margin-top: 0;
+}
+
 @media (width >= 900px) {
   .hero {
-    padding: 40px 32px;
+    padding: 80px 32px;
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 40px;
+    height: auto;
+    margin-bottom: 24px;
   }
 }

@@ -1,0 +1,256 @@
+.tiles > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 500px);
+  grid-gap: 24px;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* When there are 2 or fewer tiles, ensure they're centered */
+.tiles > ul:has(li:nth-child(-n+2):last-child) {
+  grid-template-columns: repeat(auto-fit, 500px);
+}
+
+.tiles > ul > li {
+  background-color: #8e1b33; /* Burgundy red background - Western Sydney University brand color */
+  color: white;
+  border-radius: 0; /* Remove border radius for flat edges as in reference */
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 400px; /* Minimum height for consistent tile appearance */
+}
+
+.tiles .tiles-tile-body {
+  margin: 32px; /* Increased padding to match reference */
+  padding: 0;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tiles .tiles-tile-image {
+  line-height: 0;
+}
+
+.tiles > ul > li img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.tiles .tiles-tile-body h2,
+.tiles .tiles-tile-body h3 {
+  font-size: 2.5rem;
+  line-height: 1.1;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: white;
+  font-family: var(--heading-font-family);
+  letter-spacing: -0.01em;
+}
+
+.tiles .tiles-tile-body p {
+  font-size: 1.25rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  flex-grow: 1;
+  font-family: var(--body-font-family);
+  font-weight: 400;
+  max-width: 95%; /* Prevent text from extending too wide */
+}
+
+.tiles .tiles-tile-body a {
+  color: white;
+  text-decoration: underline;
+}
+
+.tiles .tiles-tile-body a:hover {
+  text-decoration: none;
+}
+
+.tiles .tiles-tile-body h3 strong {
+  font-weight: 700;
+}
+
+.tiles .tiles-tile-body .button-container {
+  margin-top: auto;
+}
+
+.tiles .tiles-tile-body a.button {
+  display: inline-block;
+  background-color: #e25e46; /* Coral button color - matched from image */
+  color: #333;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 16px 32px;
+  border-radius: 0; /* Flat edges as in reference */
+  text-transform: uppercase;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  margin-top: auto;
+  align-self: flex-start;
+  letter-spacing: 0.05em;
+  border: none;
+  cursor: pointer;
+  font-family: var(--body-font-family, Arial, sans-serif);
+}
+
+.tiles .tiles-tile-body a.button:hover {
+  background-color: #f8937f;
+}
+
+@media (max-width: 768px) {
+  .tiles > ul > li {
+    min-height: 350px;
+  }
+  
+  .tiles .tiles-tile-body {
+    margin: 24px;
+  }
+  
+  .tiles .tiles-tile-body h2,
+  .tiles .tiles-tile-body h3 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .tiles .tiles-tile-body p {
+    font-size: 1.125rem;
+  }
+  
+  .tiles .tiles-tile-body a.button {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Tile Block Styles */
+
+/* Container for tiles - makes them display side by side */
+.tile-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: flex-start;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Each tile component */
+.component--tile {
+  width: 542px;
+  height: 263px;
+  flex-shrink: 0;
+}
+
+/* Tile article element */
+.tile {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background-color: #8B1E41;
+  overflow: hidden;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tile link */
+.tile a {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tile wrapper inside */
+.tile__wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Content box - now centered */
+.tile__content {
+  position: relative;
+  background-color: transparent;
+  padding: 20px;
+  text-align: center;
+  color: white;
+}
+
+/* Title text - centered and white */
+.title__text {
+  margin: 0;
+  font-family: var(--heading-font-family);
+  font-size: var(--heading-font-size-l);
+  color: white;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Body text */
+.tiles-tile-body h3 {
+  margin: 0;
+  font-family: var(--heading-font-family);
+  font-size: var(--heading-font-size-l);
+  color: white;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.tiles-tile-body p {
+  margin: 8px 0 0 0;
+  font-family: var(--body-font-family);
+  font-size: var(--body-font-size-s);
+  color: white;
+  text-align: center;
+}
+
+/* Hover effects */
+.tile:hover {
+  transform: scale(1.02);
+  transition: transform 0.3s ease;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .tile-wrapper {
+    flex-direction: column;
+    padding: 16px;
+  }
+  
+  .component--tile {
+    width: 100%;
+    height: 200px;
+  }
+  
+  .tiles-tile-body h3 {
+    font-size: var(--heading-font-size-m);
+  }
+  
+  .tiles-tile-body p {
+    font-size: var(--body-font-size-xs);
+  }
+}

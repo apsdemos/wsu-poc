@@ -3,17 +3,28 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(257px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   grid-gap: 24px;
 }
 
 .cards > ul > li {
-  border: 1px solid #dadada;
-  background-color: var(--background-color);
+  background-color: #8e1b33; /* Burgundy red background - Western Sydney University brand color */
+  color: white;
+  border-radius: 0; /* Remove border radius for flat edges as in reference */
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 400px; /* Minimum height for consistent card appearance */
 }
 
 .cards .cards-card-body {
-  margin: 16px;
+  margin: 32px; /* Increased padding to match reference */
+  padding: 0;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .cards .cards-card-image {
@@ -22,6 +33,93 @@
 
 .cards > ul > li img {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
+}
+
+.cards .cards-card-body h2,
+.cards .cards-card-body h3 {
+  font-size: 2.5rem;
+  line-height: 1.1;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: white;
+  font-family: var(--heading-font-family);
+  letter-spacing: -0.01em;
+}
+
+.cards .cards-card-body p {
+  font-size: 1.25rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  flex-grow: 1;
+  font-family: var(--body-font-family);
+  font-weight: 400;
+  max-width: 95%; /* Prevent text from extending too wide */
+}
+
+.cards .cards-card-body a {
+  color: white;
+  text-decoration: underline;
+}
+
+.cards .cards-card-body a:hover {
+  text-decoration: none;
+}
+
+.cards .cards-card-body h3 strong {
+  font-weight: 700;
+}
+
+.cards .cards-card-body .button-container {
+  margin-top: auto;
+}
+
+.cards .cards-card-body a.button {
+  display: inline-block;
+  background-color: #e25e46; /* Coral button color - matched from image */
+  color: #333;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 16px 32px;
+  border-radius: 0; /* Flat edges as in reference */
+  text-transform: uppercase;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  margin-top: auto;
+  align-self: flex-start;
+  letter-spacing: 0.05em;
+  border: none;
+  cursor: pointer;
+  font-family: var(--body-font-family, Arial, sans-serif);
+}
+
+.cards .cards-card-body a.button:hover {
+  background-color: #f8937f;
+}
+
+@media (max-width: 768px) {
+  .cards > ul > li {
+    min-height: 350px;
+  }
+  
+  .cards .cards-card-body {
+    margin: 24px;
+  }
+  
+  .cards .cards-card-body h2,
+  .cards .cards-card-body h3 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .cards .cards-card-body p {
+    font-size: 1.125rem;
+  }
+  
+  .cards .cards-card-body a.button {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+  }
 }

@@ -36,10 +36,9 @@
   --heading-font-size-s: 24px;
   --heading-font-size-xs: 22px;
 
-  /* nav heights */
+  /* nav height */
   --nav-height: 64px;
-  --breadcrumbs-height: 34px;
-  --header-height: var(--nav-height);
+  --header-height: 84px; /* Nav height + padding */
 }
 
 /* fallback fonts */
@@ -69,6 +68,9 @@
     --heading-font-size-m: 22px;
     --heading-font-size-s: 20px;
     --heading-font-size-xs: 18px;
+    
+    /* header height for desktop */
+    --header-height: 110px; /* Taller header for desktop */
   }
 }
 
@@ -87,7 +89,12 @@ body.appear {
 }
 
 header {
-  height: var(--header-height);
+  height: var(--nav-height);
+}
+
+/* Create a header spacer to push content down */
+main > :first-child {
+  margin-top: 0;
 }
 
 header .header,
@@ -98,12 +105,6 @@ footer .footer {
 header .header[data-block-status="loaded"],
 footer .footer[data-block-status="loaded"] {
   visibility: visible;
-}
-
-@media (width >= 900px) {
-  body[data-breadcrumbs] {
-    --header-height: calc(var(--nav-height) + var(--breadcrumbs-height));
-  }
 }
 
 h1,
@@ -165,7 +166,7 @@ button {
 a:any-link {
   color: var(--link-color);
   text-decoration: none;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 a:hover {
@@ -192,6 +193,7 @@ button {
   background-color: var(--link-color);
   color: var(--background-color);
   cursor: pointer;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -261,4 +263,9 @@ main .section.highlight {
   background-color: var(--light-color);
   margin: 0;
   padding: 40px 0;
+}
+
+/* Remove margin-top rule that's causing extra space */
+main > .hero-container:first-child {
+  margin-top: 0;
 }

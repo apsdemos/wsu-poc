@@ -1,0 +1,10 @@
+{
+  "mappings": [
+    "/content/eds-ue/:/",
+    "/content/eds-ue/configuration:/.helix/config.json",
+    "/content/eds-ue/metadata:/metadata.json"
+  ],
+  "includes": [
+    "/content/eds-ue/"
+  ]
+}

@@ -1,4 +1,4 @@
-import { fetchPlaceholders, getMetadata } from '../../scripts/aem.js';
+import { getMetadata } from '../../scripts/aem.js';
 import { loadFragment } from '../fragment/fragment.js';
 
 // media query match that indicates mobile/tablet width
@@ -28,7 +28,7 @@ function closeOnFocusLost(e) {
     const navSectionExpanded = navSections.querySelector('[aria-expanded="true"]');
     if (navSectionExpanded && isDesktop.matches) {
       // eslint-disable-next-line no-use-before-define
-      toggleAllNavSections(navSections, false);
+      toggleAllNavSections(navSections);
     } else if (!isDesktop.matches) {
       // eslint-disable-next-line no-use-before-define
       toggleMenu(nav, navSections, false);
@@ -103,76 +103,14 @@ function toggleMenu(nav, navSections, forceExpanded = null) {
   }
 }
 
-function getDirectTextContent(menuItem) {
-  const menuLink = menuItem.querySelector(':scope > a');
-  if (menuLink) {
-    return menuLink.textContent.trim();
-  }
-  return Array.from(menuItem.childNodes)
-    .filter((n) => n.nodeType === Node.TEXT_NODE)
-    .map((n) => n.textContent)
-    .join(' ');
-}
-
-async function buildBreadcrumbsFromNavTree(nav, currentUrl) {
-  const crumbs = [];
-
-  const homeUrl = document.querySelector('.nav-brand a[href]').href;
-
-  let menuItem = Array.from(nav.querySelectorAll('a')).find((a) => a.href === currentUrl);
-  if (menuItem) {
-    do {
-      const link = menuItem.querySelector(':scope > a');
-      crumbs.unshift({ title: getDirectTextContent(menuItem), url: link ? link.href : null });
-      menuItem = menuItem.closest('ul')?.closest('li');
-    } while (menuItem);
-  } else if (currentUrl !== homeUrl) {
-    crumbs.unshift({ title: getMetadata('og:title'), url: currentUrl });
-  }
-
-  const placeholders = await fetchPlaceholders();
-  const homePlaceholder = placeholders.breadcrumbsHomeLabel || 'Home';
-
-  crumbs.unshift({ title: homePlaceholder, url: homeUrl });
-
-  // last link is current page and should not be linked
-  if (crumbs.length > 1) {
-    crumbs[crumbs.length - 1].url = null;
-  }
-  crumbs[crumbs.length - 1]['aria-current'] = 'page';
-  return crumbs;
-}
-
-async function buildBreadcrumbs() {
-  const breadcrumbs = document.createElement('nav');
-  breadcrumbs.className = 'breadcrumbs';
-
-  const crumbs = await buildBreadcrumbsFromNavTree(document.querySelector('.nav-sections'), document.location.href);
-
-  const ol = document.createElement('ol');
-  ol.append(...crumbs.map((item) => {
-    const li = document.createElement('li');
-    if (item['aria-current']) li.setAttribute('aria-current', item['aria-current']);
-    if (item.url) {
-      const a = document.createElement('a');
-      a.href = item.url;
-      a.textContent = item.title;
-      li.append(a);
-    } else {
-      li.textContent = item.title;
-    }
-    return li;
-  }));
-
-  breadcrumbs.append(ol);
-  return breadcrumbs;
-}
-
 /**
  * loads and decorates the header, mainly the nav
  * @param {Element} block The header block element
  */
 export default async function decorate(block) {
+  // Store original content before making any changes
+  const originalContent = block.cloneNode(true);
+  
   // load nav as fragment
   const navMeta = getMetadata('nav');
   const navPath = navMeta ? new URL(navMeta, window.location).pathname : '/nav';
@@ -182,20 +120,101 @@ export default async function decorate(block) {
   block.textContent = '';
   const nav = document.createElement('nav');
   nav.id = 'nav';
-  while (fragment.firstElementChild) nav.append(fragment.firstElementChild);
-
-  const classes = ['brand', 'sections', 'tools'];
-  classes.forEach((c, i) => {
-    const section = nav.children[i];
-    if (section) section.classList.add(`nav-${c}`);
-  });
-
-  const navBrand = nav.querySelector('.nav-brand');
-  const brandLink = navBrand.querySelector('.button');
-  if (brandLink) {
-    brandLink.className = '';
-    brandLink.closest('.button-container').className = '';
+  
+  // Add navigation sections from fragment
+  const sections = document.createElement('div');
+  sections.classList.add('nav-sections');
+  
+  // Find the picture element for the logo
+  const picture = originalContent.querySelector('picture');
+  if (picture) {
+    // Create a section for the logo
+    const logoSection = document.createElement('div');
+    logoSection.classList.add('section');
+    logoSection.dataset.sectionStatus = 'loaded';
+    
+    const logoWrapper = document.createElement('div');
+    logoWrapper.classList.add('default-content-wrapper');
+    
+    // Clone the picture element
+    const pictureClone = picture.cloneNode(true);
+    
+    // Ensure the picture element is properly formed
+    if (!pictureClone.querySelector('source') || !pictureClone.querySelector('img')) {
+      // If picture element is not properly formed, create a simple img element
+      const img = document.createElement('img');
+      img.src = 'https://main--eds-ue--monendra.aem.page/media_1539a7929c0d087edc0dadadecdfdd527ecc591ed.png';
+      img.alt = 'Western Sydney University';
+      img.width = 1435;
+      img.height = 212;
+      logoWrapper.appendChild(img);
+    } else {
+      logoWrapper.appendChild(pictureClone);
+    }
+    
+    logoSection.appendChild(logoWrapper);
+    sections.appendChild(logoSection);
+  } else {
+    // If no picture element is found, create a simple img element as fallback
+    const logoSection = document.createElement('div');
+    logoSection.classList.add('section');
+    logoSection.dataset.sectionStatus = 'loaded';
+    
+    const logoWrapper = document.createElement('div');
+    logoWrapper.classList.add('default-content-wrapper');
+    
+    const img = document.createElement('img');
+    img.src = 'https://main--eds-ue--monendra.aem.page/media_1539a7929c0d087edc0dadadecdfdd527ecc591ed.png';
+    img.alt = 'Western Sydney University';
+    img.width = 1435;
+    img.height = 212;
+    
+    logoWrapper.appendChild(img);
+    logoSection.appendChild(logoWrapper);
+    sections.appendChild(logoSection);
   }
+  
+  // Find navigation items from the original content or fragment
+  const navItems = originalContent.querySelector('ul');
+  if (navItems) {
+    // Create a section for navigation items
+    const navSection = document.createElement('div');
+    navSection.classList.add('section');
+    navSection.dataset.sectionStatus = 'loaded';
+    
+    const navWrapper = document.createElement('div');
+    navWrapper.classList.add('default-content-wrapper');
+    navWrapper.appendChild(navItems.cloneNode(true));
+    
+    navSection.appendChild(navWrapper);
+    sections.appendChild(navSection);
+  } else {
+    // Move content from fragment to sections if no navigation items found in original content
+    while (fragment.firstElementChild) {
+      const el = fragment.firstElementChild;
+      // Skip the first element (which would be the brand/logo in the original fragment)
+      if (!sections.querySelector('.section:nth-child(2)') && el.querySelector('a')?.textContent.trim() === 'Button') {
+        fragment.removeChild(el);
+        continue;
+      }
+      
+      // Skip any search/tools sections
+      if (el.querySelector('form') || el.querySelector('input[type="search"]')) {
+        fragment.removeChild(el);
+        continue;
+      }
+      
+      // Skip any picture elements or standalone images (that aren't part of navigation)
+      if (el.querySelector('picture') || (el.querySelector('img') && !el.querySelector('ul'))) {
+        fragment.removeChild(el);
+        continue;
+      }
+      
+      sections.append(fragment.firstElementChild);
+    }
+  }
+  
+  nav.append(sections);
 
   const navSections = nav.querySelector('.nav-sections');
   if (navSections) {
@@ -209,14 +228,6 @@ export default async function decorate(block) {
         }
       });
     });
-  }
-
-  const navTools = nav.querySelector('.nav-tools');
-  if (navTools) {
-    const search = navTools.querySelector('a[href*="search"]');
-    if (search && search.textContent === '') {
-      search.setAttribute('aria-label', 'Search');
-    }
   }
 
   // hamburger for mobile
@@ -236,8 +247,4 @@ export default async function decorate(block) {
   navWrapper.className = 'nav-wrapper';
   navWrapper.append(nav);
   block.append(navWrapper);
-
-  if (getMetadata('breadcrumbs').toLowerCase() === 'true') {
-    navWrapper.append(await buildBreadcrumbs());
-  }
 }
