@@ -1,5 +1,5 @@
 mountpoints:
   /:
-    url: "https://author-p106442-e1666219.adobeaemcloud.com/bin/franklin.delivery/apsdemos/wsu-poc/main"
+    url: "https://author-p106442-e1666219.adobeaemcloud.com/bin/franklin.delivery/apsdemos/wsu-poc/wsu-ue-test"
     type: "markup"
     suffix: ".html"
