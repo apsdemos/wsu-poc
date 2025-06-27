@@ -144,7 +144,7 @@ header .nav-brand {
 }
 
 header nav .nav-brand img {
-  width: 128px;
+  width: 90px;
   height: auto;
 }
 
@@ -180,6 +180,36 @@ header nav .nav-sections ul>li>ul>li {
   font-weight: 400;
 }
 
+@media (width < 900px) {
+  header nav .nav-sections .default-content-wrapper ul li a {
+    padding: 3px 4px;
+    margin: 0;
+    display: inline-block;
+    color: #333;
+    background-color: transparent;
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: roboto, roboto-fallback, sans-serif;
+  }
+
+  header nav .nav-sections .default-content-wrapper>ul>li>ul a {
+    font-weight: 300;
+  }
+
+  header nav .nav-sections .default-content-wrapper>ul>li>ul li a {
+    position: relative;
+    padding-left: 20px;
+    display: inline-block;
+  }
+
+  header nav .nav-sections .default-content-wrapper>ul>li>ul li a:before {
+    content: '>';
+    position: absolute;
+    top: 2px;
+    left: 8px;
+  }
+}
+
 @media (width >=900px) {
 
   header nav .nav-sections .default-content-wrapperul li:first-child a {
@@ -191,10 +221,14 @@ header nav .nav-sections ul>li>ul>li {
     padding: 3px 4px;
     margin: 0;
     display: inline-block;
-    font-weight: 700;
     color: #333;
     background-color: transparent;
-    font-size: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+  }
+
+  header nav .nav-sections .default-content-wrapper ul li a:hover {
+    color: rgb(0, 135, 128);
   }
 
   header nav .nav-sections {
@@ -242,37 +276,39 @@ header nav .nav-sections ul>li>ul>li {
     position: relative;
   }
 
-  /* header nav .nav-sections .default-content-wrapper>ul>li[aria-expanded='true']>ul, */
   header nav .nav-sections .default-content-wrapper>ul>li:hover>ul {
     display: block;
     position: absolute;
-    left: -24px;
-    width: 200px;
-    top: 150%;
-    padding: 16px;
+    left: 7px;
+    width: auto;
+    min-width: 150px;
+    top: 24px;
+    padding: 4px 0;
     background-color: rgba(55, 55, 55, .9);
     white-space: initial;
     z-index: 1;
   }
 
-  header nav .nav-sections .default-content-wrapper>ul>li:hover>ul a {
+  header nav .nav-sections .default-content-wrapper>ul>li>ul>li {
+    margin-left: 0;
+  }
+
+  header nav .nav-sections .default-content-wrapper>ul>li>ul a {
     color: #fff;
+    position: relative;
+  }
+
+  header nav .nav-sections .default-content-wrapper>ul>li>ul li a:before {
+    content: '>';
+    position: absolute;
+    top: 5px;
+    left: 8px;
   }
 
   header nav .nav-sections .default-content-wrapper>ul>li:hover>ul a:hover {
     background-color: #000;
-  }
-
-  header nav .nav-sections .default-content-wrapper>ul>li>ul::before {
-    content: '';
-    position: absolute;
-    top: -8px;
-    left: 16px;
-    width: 0;
-    height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-bottom: 8px solid rgba(55, 55, 55, .9);
+    text-decoration: none;
+    color: #fff;
   }
 
   header nav .nav-sections .default-content-wrapper>ul>li>ul>li {
@@ -281,10 +317,11 @@ header nav .nav-sections ul>li>ul>li {
 
   header nav .nav-sections .default-content-wrapper>ul>li>ul>li a {
     display: block;
-    padding: 3px 20px;
+    padding: 5px 20px;
     font-weight: 400;
     line-height: 1.428571429;
     white-space: nowrap;
+    font-size: 12px;
   }
 }
 

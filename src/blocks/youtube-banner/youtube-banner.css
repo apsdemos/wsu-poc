@@ -28,7 +28,7 @@
 
 .youtube-banner__inner h2 {
     color: #fff;
-    font-size: 32px;
+    font-size: 2rem;
     margin: 0;
     font-weight: bold;
     margin-bottom: 1rem;
@@ -40,7 +40,7 @@
 
 .youtube-banner__text p {
     color: #fff;
-    font-size: 18px;
+    font-size: 1.125rem;
     margin: 0;
     margin-bottom: 0.5rem;
 }
@@ -65,5 +65,13 @@ responsive styles
 
     .youtube-banner__text {
         padding: 16px;
+    }
+
+    .youtube-banner__text p {
+        font-size: 0.875rem;
+    }
+
+    .youtube-banner__inner h2 {
+        font-size: 1.75rem;
     }
 }

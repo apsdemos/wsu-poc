@@ -43,15 +43,9 @@ footer .footer p {
   text-decoration: underline;
 }
 
-.footer-top {
-  background-image: url(https://www.westernsydney.edu.au/__data/assets/image/0012/996825/hero-footer.jpg);
-}
-
 .footer-overlay {
   background: rgba(30, 30, 30, 0.85);
 }
-
-
 
 footer .footer__inner {
   margin: auto;
@@ -111,6 +105,11 @@ footer .footer__inner {
 .footer-logo img {
   width: 360px;
   height: auto;
+}
+
+.footer-top {
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 

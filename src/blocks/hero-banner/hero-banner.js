@@ -42,6 +42,10 @@ export default function decorate(block) {
         li.classList.add('hero__tab');
         tabBtn.innerText = title;
         tabBtn.addEventListener('click', () => {
+            const activeTabContent = tabContents.querySelector('.hero__tab-content.active');
+            const height = activeTabContent.offsetHeight;
+            tabContents.style.height = `${height}px`;
+
             // deactivate all tabs and contents
             tabs.querySelectorAll('.hero__tab').forEach((t) => t.classList.remove('active'));
             tabContents.querySelectorAll('.hero__tab-content').forEach((c) => c.classList.remove('active'));
@@ -49,6 +53,10 @@ export default function decorate(block) {
             // activate the clicked tab and its content
             tabBtn.closest('li').classList.add('active');
             tabContent.classList.add('active');
+
+            setTimeout(() => {
+                tabContents.style.height = 'auto';
+            }, 200);
         });
         li.appendChild(tabBtn);
 
@@ -69,8 +77,13 @@ export default function decorate(block) {
         index++;
     });
 
-
-    tabContents.querySelectorAll('picture > img').forEach((img) => img.closest('picture').replaceWith(createOptimizedPicture(img.src, img.alt, false, [{ width: '1200', height: "508" }])));
+    tabContents.querySelectorAll('picture > img').forEach((img) => {
+        const picture = img.closest('picture');
+        if (picture) {
+            const optimizedPicture = createOptimizedPicture(img.src, img.alt, false, [{ width: '1200', height: '508' }]);
+            picture.replaceWith(optimizedPicture);
+        }
+    });
 
     block.innerHTML = '';
     block.appendChild(tabContents);
