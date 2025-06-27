@@ -229,6 +229,7 @@ header nav .nav-sections ul>li>ul>li {
 
   header nav .nav-sections .default-content-wrapper ul li a:hover {
     color: rgb(0, 135, 128);
+    text-decoration: underline;
   }
 
   header nav .nav-sections {
