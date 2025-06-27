@@ -19,12 +19,7 @@ export default function decorate(block) {
 
         const link = textCol.querySelector('a');
 
-        let imgSrc = '';
-        if (imageCol.querySelector('img')) {
-            imgSrc = imageCol.querySelector('img').src;
-        } else {
-            imgSrc = imageCol.innerText.trim();
-        }
+        const mediaImage = imageCol.querySelector('picture');
 
         const url = link ? link.href : '';
         const title = link ? link.innerText : textCol.innerText.trim();
@@ -34,7 +29,7 @@ export default function decorate(block) {
         tabContent.classList.add('hero__tab-content');
         tabContent.innerHTML = `
             <a href="${url}" class="hero__tab-link">
-            <img class="hero__image" src="${imgSrc}" alt="${title}" />
+            ${mediaImage.outerHTML}
             </a> 
             <a class="tab-content-blurb" href="${url}"> 
                         <h3>${title}</h3> 
@@ -74,8 +69,8 @@ export default function decorate(block) {
         index++;
     });
 
-    // replace images with optimized versions
-    // ul.querySelectorAll('picture > img').forEach((img) => img.closest('picture').replaceWith(createOptimizedPicture(img.src, img.alt, false, [{ width: '750' }])));
+
+    tabContents.querySelectorAll('picture > img').forEach((img) => img.closest('picture').replaceWith(createOptimizedPicture(img.src, img.alt, false, [{ width: '1200', height: "508" }])));
 
     block.innerHTML = '';
     block.appendChild(tabContents);

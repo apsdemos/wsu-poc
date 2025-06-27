@@ -1,4 +1,4 @@
-import { getMetadata } from '../../scripts/aem.js';
+import { getMetadata, createOptimizedPicture } from '../../scripts/aem.js';
 import { loadFragment } from '../fragment/fragment.js';
 import './footer.css';
 
@@ -32,16 +32,10 @@ export default async function decorate(block) {
 
   const sections = footer.querySelectorAll('.default-content-wrapper');
 
-  let logoUrl = ''
-  if (sections[0].querySelector('img')) {
-    logoUrl = sections[1].querySelector('img').src;
-  } else {
-    logoUrl = sections[1].querySelector('p').innerText;
-  }
+  const logo = sections[1].querySelector('picture')
 
   const linksTitles = sections[0].querySelectorAll('h2');
   const linksList = sections[0].querySelectorAll('ul');
-
 
   for (let x = 0; x < linksTitles.length; x++) {
     const sectionTitle = linksTitles[x].innerText
@@ -60,8 +54,6 @@ export default async function decorate(block) {
     footerInner.append(section);
   }
 
-
-
   const helpLinks = sections[2].querySelector('ul')
   const copyrightText = sections[3].querySelector('p').innerText
 
@@ -73,11 +65,16 @@ export default async function decorate(block) {
 
   const footerLogo = document.createElement('div');
   footerLogo.className = 'footer-logo';
-  const logoImage = document.createElement('img');
-  logoImage.src = logoUrl;
-  footerLogo.append(logoImage);
-  footerInner.append(footerLogo);
 
+  footerLogo.append(logo);
+  const img = footerLogo.querySelector('picture > img');
+  if (img) {
+    img.closest('picture').replaceWith(
+      createOptimizedPicture(img.src, img.alt, false, [{ width: '360', height: '65' }])
+    );
+  }
+
+  footerInner.append(footerLogo);
 
   footerOverlay.append(footerInner);
   footerTop.append(footerOverlay);

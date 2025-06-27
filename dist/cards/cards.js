@@ -1,12 +1,11 @@
-import"../chunks/aem-CseYPO2m.js";function v(r){const t=document.createElement("div");t.classList.add("cards__inner"),[...r.children].forEach(l=>{const c=document.createElement("div");c.classList.add("card");const i=l.querySelectorAll("div"),n=i[0],d=i[1];let a="";n.querySelector("img")?a=n.querySelector("img").src:a=n.innerText.trim();const e=d.querySelector("a"),o=e?e.href:"",s=e?e.innerText:d.innerText.trim();c.innerHTML=`
+import{g as l}from"../chunks/aem-CseYPO2m.js";function h(a){const r=document.createElement("div");r.classList.add("cards__inner"),[...a.children].forEach(e=>{const c=document.createElement("div");c.classList.add("card");const i=e.querySelectorAll("p"),t=i[1].querySelector("a"),d=t?t.href:"",n=t?t.innerText:i[1].innerText.trim(),s=i[0].querySelector("picture");c.innerHTML=`
       <div class="card">
-          <a href="${o}" alt="${s}">
-              <div class="card-image-container" >
-                <div class="card__image" style="background: url('${a}') center center / cover;">
-                </div>
+          <a href="${d}" alt="${n}">
+              <div class="card-image-container">
+                ${s.outerHTML}
               </div>
-              <h4>${s}</h4>
+              <h4>${n}</h4>
           </a>
       </div>
-    `,t.appendChild(c)}),r.innerHTML="",r.appendChild(t)}export{v as default};
+    `,r.appendChild(c)}),r.querySelectorAll("picture > img").forEach(e=>e.closest("picture").replaceWith(l(e.src,e.alt,!1,[{width:"400",height:"333"}]))),a.innerHTML="",a.appendChild(r)}export{h as default};
 //# sourceMappingURL=cards.js.map
