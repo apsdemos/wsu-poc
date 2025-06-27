@@ -57,6 +57,12 @@ export default async function decorate(block) {
   const helpLinks = sections[2].querySelector('ul')
   const copyrightText = sections[3].querySelector('p').innerText
 
+  const footerBg = sections[4].querySelector('picture img');
+  if (footerBg) {
+    const footerBgPicture = createOptimizedPicture(footerBg.src, footerBg.alt, false, [{ width: '1920', height: '1080' }]);
+    footerTop.style.backgroundImage = `url(${footerBgPicture.querySelector('img').src})`;
+  }
+
   const footerCopyright = document.createElement('div');
   footerCopyright.className = 'footer-copyright';
   footerCopyright.append(helpLinks);
