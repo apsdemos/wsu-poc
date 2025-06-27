@@ -16,7 +16,7 @@ export default function decorate(block) {
         const bannerHtml = `
             <div class="youtube-banner__video">
 
-                <iframe src="https://www.youtube.com/embed/${youtubeVideLinkId}" allowfullscreen frameborder="0"></iframe>
+                <iframe title="Youtube video" src="https://www.youtube.com/embed/${youtubeVideLinkId}" allowfullscreen frameborder="0"></iframe>
             </div>
             <div class="youtube-banner__text">
                     ${bannerText}
