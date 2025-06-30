@@ -1,0 +1,176 @@
+.hero__contents {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.hero__tab-content {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+.hero__tab-content.active {
+    display: block;
+}
+
+.hero__tab-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+}
+
+.hero__contents img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+.hero__tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    list-style: none;
+    padding: 0;
+    width: 100%;
+    margin: 0px;
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 3;
+    margin-top: -10px;
+}
+
+.hero__tabs li {
+    width: 20%;
+    position: relative;
+}
+
+.hero__tabs li button {
+    background: rgb(78, 220, 202);
+    width: 100%;
+    border-radius: 0;
+    border: 0;
+    color: #fff;
+    text-align: center;
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.5rem;
+}
+
+.hero__tabs li button:hover {
+    background-color: #008780;
+    transition: background-color 0.5s ease;
+}
+
+.hero__tabs li.active button {
+    background-color: #000;
+    color: #fff;
+    font-weight: bold;
+}
+
+
+.hero__blurb {
+    position: absolute;
+    bottom: 38px;
+    cursor: pointer;
+    background: rgba(0, 0, 0, .75);
+    padding: 12px;
+    display: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.hero__tabs li.active .hero__blurb {
+    display: block;
+
+}
+
+.hero__blurb a {
+    color: #fff;
+}
+
+.hero__blurb a:hover {
+    text-decoration: none;
+}
+
+.hero__blurb:hover {
+    background: rgba(0, 0, 0, .9);
+    transition: background-color 0.5s ease;
+}
+
+.hero__blurb h3 {
+    font-size: 1.25rem;
+    border-bottom: 1px solid #fff;
+    margin: 0 0 8px 0;
+    padding: 0 0 8px 0;
+}
+
+.hero__blurb-content {
+    font-size: 12px;
+}
+
+.tab-content-blurb {
+    display: none;
+}
+
+
+@media (max-width: 768px) {
+
+    .hero__tab-content.active .tab-content-blurb {
+        position: absolute;
+        bottom: 0px;
+        cursor: pointer;
+        background: rgba(0, 0, 0, .75);
+        padding: 12px;
+        width: 100%;
+        box-sizing: border-box;
+        z-index: 9;
+        display: block;
+        color: #fff;
+    }
+
+    .hero__tab-content.active .tab-content-blurb h3 {
+        font-size: 1.25rem;
+        margin: 0;
+        padding: 0;
+    }
+
+    .hero__tab-content.active .tab-content-blurb:hover {
+        text-decoration: none;
+        background: rgba(0, 0, 0, .9);
+        transition: background-color 0.5s ease;
+    }
+
+    .hero__tabs {
+        display: flex;
+        flex-direction: column;
+        list-style: none;
+        padding: 0;
+        width: 100%;
+        justify-content: center;
+        margin: 0px;
+        margin-bottom: 32px;
+    }
+
+    .hero__tabs li {
+        width: 100%;
+        margin-bottom: 4px;
+    }
+
+    .hero__tabs li:last-child {
+        margin-bottom: 0;
+    }
+
+    .hero__tabs li button {
+        font-size: 1rem;
+    }
+
+    .hero__blurb {
+        display: none !important;
+    }
+}
