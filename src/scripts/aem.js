@@ -325,9 +325,9 @@ function createOptimizedPicture(
     { width: '750' },
   ],
 ) {
-  const url = new URL(src, window.location.href);
+  const url = !src.startsWith('http') ? new URL(src, window.location.href) : new URL(src);
   const picture = document.createElement('picture');
-  const { pathname } = url;
+  const { origin, pathname } = url;
   const ext = pathname.substring(pathname.lastIndexOf('.') + 1);
 
   // webp
@@ -337,7 +337,7 @@ function createOptimizedPicture(
     source.setAttribute('type', 'image/webp');
     source.setAttribute(
       'srcset',
-      `${pathname}?width=${br.width}&format=webply&optimize=medium`,
+      `${origin}${pathname}?width=${br.width}&format=webply&optimize=medium`,
     );
     picture.appendChild(source);
   });
@@ -349,7 +349,7 @@ function createOptimizedPicture(
       if (br.media) source.setAttribute('media', br.media);
       source.setAttribute(
         'srcset',
-        `${pathname}?width=${br.width}&format=${ext}&optimize=medium`,
+        `${origin}${pathname}?width=${br.width}&format=${ext}&optimize=medium`,
       );
       picture.appendChild(source);
     } else {
@@ -359,7 +359,7 @@ function createOptimizedPicture(
       picture.appendChild(img);
       img.setAttribute(
         'src',
-        `${pathname}?width=${br.width}&format=${ext}&optimize=medium`,
+        `${origin}${pathname}?width=${br.width}&format=${ext}&optimize=medium`,
       );
     }
   });
