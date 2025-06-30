@@ -1,0 +1,2 @@
+import{_ as i}from"./aem-D3RMVdVl.js";import{N as o}from"./delayed-UHKhK80N.js";let e;const r="/public/plugins/exp/exp.js";async function n(){if(!document.querySelector("#aem-sidekick-exp")){e=await i(()=>import(`${o}${r}`),[],import.meta.url);return}e||(e=await i(()=>import(`${o}${r}`),[],import.meta.url)),e.default()}(async function(){const t=document.querySelector("aem-sidekick");t&&t.addEventListener("custom:experimentation",n)})();
+//# sourceMappingURL=sidekick-D3nI8jOZ.js.map
